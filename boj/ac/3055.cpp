@@ -1,4 +1,3 @@
-//AC
 #include <cstdio>
 #include <cstdlib>
 #include <queue>
