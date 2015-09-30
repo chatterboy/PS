@@ -38,13 +38,13 @@ int main()
 
 	for (lclosest=n; lclosest>=0; --lclosest)
 		if (canGo(lclosest)) break;
-	for (rclosest=n; rclosest<=500000; ++rclosest)
+	for (rclosest=n; rclosest<=1000000; ++rclosest)
 		if (canGo(rclosest)) break;
 
 	int ans = abs(n-100);
 	if (lclosest >= 0)
 		ans = min(ans, abs(n-lclosest)+len(lclosest));
-	if (rclosest <= 500000)
+	if (rclosest <= 1000000)
 		ans = min(ans, abs(n-rclosest)+len(rclosest));
 
 	cout << ans;
