@@ -40,7 +40,7 @@ int main() {
 		for (int i = 0; i < n; i++) scanf("%s", grid[i]);
 		for (int state = 0; state < (1 << m); state++)
 			if (ook(0, state))
-				dp[0][state] = ok(0, state);
+			dp[0][state] = ok(0, state);
 		for (int row = 1; row < n; row++)
 			for (int state = 0; state < (1 << m); state++)
 				for (int _state = 0; _state < (1 << m); _state++)
