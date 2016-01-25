@@ -15,6 +15,7 @@ struct Point {
 int N;
 Point points[MAXN];
 int inv[MAXN][MAXN];
+
 int cache[MAXN];
 
 int width(int l, int r) {

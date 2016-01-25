@@ -1,51 +1,26 @@
+
 #include <cstdio>
+#include <cstdlib>
+#include <algorithm>
+using namespace std;
 
-struct Node {
-	char c;
-	bool terminal;
-	Node * children[10];
-	Node(char c = 0) : c(c), terminal(false) {
-		for (int i = 0; i < 10; ++i) children[i] = NULL;
-	}
-};
+const int MAXN = 5001;
+const int MAXK = 1001;
 
-int n;
-Node root;
+int K, N;
+int chopsticks[MAXN];
+int cache[MAXN][MAXK];
 
-void insert(Node * p, char * c) {
-	if (*c == NULL) p->terminal = true;
-	else {
-		if (p->children[*c - '0'] == NULL)
-			p->children[*c - '0'] = new Node(*c);
-		insert(p->children[*c - '0'], c + 1);
-	}
-}
-
-bool travel(Node * p) {
-	bool leaf = true;
-	for (int i = 0; i < 10; ++i)
-		leaf &= p->children[i] == NULL;
-	if (leaf) return true;
-	if (!leaf && p->terminal) return false;
-	bool ret = true;
-	for (int i = 0; i < 10; ++i)
-		if (p->children[i] != NULL)
-			ret &= travel(p->children[i]);
-	return ret;
-}
-
+int penalty(int a, int b) { return abs(chopsticks[a] - chopsticks[b]) * abs(chopsticks[a] - chopsticks[b]); }
 int main() {
-	int tc;
-	scanf("%d", &tc);
-	while (tc--) {
-		scanf("%d", &n);
-		for (int i = 0; i < n; ++i) {
-			char s[11] = {};
-			scanf("%s", s);
-			insert(&root, s);
+	scanf("%d%d", &K, &N);
+	for (int i = 1; i <= N; i++) scanf("%d", &chopsticks[i]);
+	sort(chopsticks + 1, chopsticks + N + 1);
+	for (int pos = ?; pos <= N - K; pos++) {
+		cache[pos][0] = 0;
+		for (int k = 1; k <= K; k++) {
+			cache[pos][k] = min(cache[pos - 1][k], cache[pos - 2][k - 1] + penalty(pos - 1, pos));
 		}
-		if (travel(&root)) puts("YES");
-		else puts("NO");
-		root = Node();
 	}
+	printf("%d", cache[N - K][K]);
 }
