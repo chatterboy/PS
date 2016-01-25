@@ -1,69 +1,51 @@
 #include <cstdio>
-#include <cstring>
-#include <cctype>
-#include <string>
-using namespace std;
-#define BUFFER_SIZE 128
-#define WHITE_SPACE 0x20
 
-FILE *fin;
-char buf[BUFFER_SIZE];
+struct Node {
+	char c;
+	bool terminal;
+	Node * children[10];
+	Node(char c = 0) : c(c), terminal(false) {
+		for (int i = 0; i < 10; ++i) children[i] = NULL;
+	}
+};
 
-void init_read_file() {
-	fin = fopen("input.in", "r");
-}
+int n;
+Node root;
 
-void free_read_file() {
-	fclose(fin);
-}
-
-int read_line_file() {
-	memset(buf, 0, sizeof buf);
-	if (fgets(buf, sizeof buf, fin) != NULL)
-		return 0;
-	return 1;
-}
-
-void _make_words_line() {
-	char* token;
-	char _buf[BUFFER_SIZE] = {0};
-	strcpy(_buf, buf);
-	token = strtok(_buf, " .,;:\n!?\"(_");
-	while (token != NULL) {
-		puts(token);
-		token = strtok(NULL, " .,;:\n!?\"(_");
+void insert(Node * p, char * c) {
+	if (*c == NULL) p->terminal = true;
+	else {
+		if (p->children[*c - '0'] == NULL)
+			p->children[*c - '0'] = new Node(*c);
+		insert(p->children[*c - '0'], c + 1);
 	}
 }
 
-void make_words_line() {
-	int n;
-	bool flag;
-	string w;
-	n = strlen(buf);
-	for (int i = 0; i < n; i++) {
-		if (isalpha(buf[i]))
-			w.push_back(buf[i]);
-		else {
-			flag = false;
-			if (buf[i] != WHITE_SPACE)
-				if ((i-1 >= 0 && isalpha(buf[i-1])) && (i+1 < n && isalpha(buf[i+1]))) {
-					flag = true;
-					w.push_back(buf[i]);
-				}
-			if (!flag) {
-				if (!w.empty())
-//					printf("%s %d\n", w.c_str(), w.size());
-					puts(w.c_str());
-				w.clear();
-			}
-		}
-	}
+bool travel(Node * p) {
+	bool leaf = true;
+	for (int i = 0; i < 10; ++i)
+		leaf &= p->children[i] == NULL;
+	if (leaf) return true;
+	if (!leaf && p->terminal) return false;
+	bool ret = true;
+	for (int i = 0; i < 10; ++i)
+		if (p->children[i] != NULL)
+			ret &= travel(p->children[i]);
+	return ret;
 }
 
 int main() {
-	init_read_file();
-	while (!read_line_file()) {
-		make_words_line();
+	int tc;
+	scanf("%d", &tc);
+	while (tc--) {
+		scanf("%d", &n);
+		for (int i = 0; i < n; ++i) {
+			char s[11] = {};
+			scanf("%s", s);
+			insert(&root, s);
+		}
+		if (travel(&root)) puts("YES");
+		else puts("NO");
+		root = Node();
 	}
-	free_read_file();
 }
