@@ -12,42 +12,59 @@
 // T[pos][another] = min(T[pos-1][another] + dist(pos-1, pos), T[pos-1][pos] + dist(pos, another)) // bottom-up
 
 #include <cstdio>
-#include <cstdlib>
+#include <cstring>
 #include <algorithm>
 using namespace std;
 
-const int INF = 2e9;
-const int MAX = 1001;
+const int MAXW = 1001;
 
 struct Point {
 	int x, y;
+	Point(int x = 0, int y = 0) : x(x), y(y) {}
 };
 
 int N, W;
-Point accidents[MAX];
-int cache[MAX][MAX];
+Point accidents[MAXW];
+int cache[MAXW][MAXW];
 
-int dist(int i, int j) {
-	int xi = accidents[i].x;
-	int yi = accidents[i].y;
-	int xj = accidents[j].x;
-	int yj = accidents[j].y;
-	if (i == 0) xi = yi = 1;
-	else if (i == -1) xi = yi = N;
-	return abs(xi - xj) + abs(yi - yj);
+int dist(int a, int b) {
+	return abs(accidents[a].x - accidents[b].x) + abs(accidents[a].y - accidents[b].y);
 }
-int solve(int pos, int another) {
+int minSumDist(int pos, int another) {
 	if (pos == W) return 0;
-//	printf("%d %d\n", pos, another);
-	return min(solve(pos + 1, another) + dist(pos, pos + 1), solve(pos + 1, pos) + dist(another, pos + 1));
+	int &ret = cache[pos][another];
+	if (ret != -1) return ret;
+	return ret = min(minSumDist(pos + 1, another) + dist(pos, pos + 1),
+					 minSumDist(pos + 1, pos) + dist(another, pos + 1));
+}
+void construct(int pos, int another, int now) {
+	if (pos == W) return;
+	int minv = minSumDist(pos + 1, another) + dist(pos, pos + 1);
+	if (minv > minSumDist(pos + 1, pos) + dist(another, pos + 1)) {
+		minv = minSumDist(pos + 1, pos) + dist(another, pos + 1);
+		another = pos;
+		now = (now == 1 ? 2 : 1);
+	}
+	printf("%d\n", now);
+	construct(pos + 1, another, now);
 }
 int main() {
 	scanf("%d%d", &N, &W);
-	for (int i = 1; i <= W; i++) scanf("%d%d", &accidents[i].y, &accidents[i].x);
-	int minv = solve(1, 0) + dist(-1, 1);
-	int carno = 2;
-	if (minv > solve(1, -1) + dist(0, 1)) {
-		minv = carno
+	accidents[1] = Point(1, 1);
+	accidents[2] = Point(N, N);
+	for (int i = 3; i <= W + 2; i++)
+		scanf("%d%d", &accidents[i].y, &accidents[i].x);
+	W += 2;
+	memset(cache, -1, sizeof(cache));
+	int minv = minSumDist(3, 2) + dist(1, 3);
+	int another = 2;
+	int now = 1;
+	if (minv > minSumDist(3, 1) + dist(2, 3)) {
+		minv = minSumDist(3, 1) + dist(2, 3);
+		another = 1;
+		now = (now == 1 ? 2 : 1);
 	}
-	printf("%d", min(solve(1, 0) + dist(-1, 1), solve(1, -1) + dist(0, 1)));
+	printf("%d\n", minv);
+	printf("%d\n", now);
+	construct(3, another, now);
 }

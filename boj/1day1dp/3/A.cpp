@@ -1,49 +1,60 @@
-// 벌점을 계산할 때 C는 상관없다.
-// A와 B의 차가 작게 뽑는 것이 최적이다. (가정)
+// pos번 젓가락은
+// 1) 사용하지 않을 수 있다
+// 2) 짧은 젓가락 두 개 중 하나로 사용할 수 있다
+// 3) 긴 젓가락으로 사용할 수 있다
 
-// 3N == K 이면 그리디하게 뽑는 것이 최적이다. (위의 경우를 이용해서)
-// 3N > K 이면 dp
-// 어쨋건 인접한 2개를 뽑는게 최적이다. 여기서 뽑고 저 멀리서 뽑는건 절대아님
+// 2)에서 짧은 것 두 개로 사용할 때는 인접한 것 끼리 사용하는 것이 최적이다.
 
-// T[pos][k] = 젓가락 pos 위치에서 k명 더 줘야할 때 , 벌점의 총합의 최소값
-// T[pos][k] = min(T[pos-1][k], T[pos-2][k-1] + penalty(pos-1, pos))
+// T[pos] = pos까지 고려했을 때 벌점의 총 합의 최솟값
 
-// 사람 수 K, 젓가락 수 N
+// T[pos][k] = pos까지 고려하고 k
 
-// pos <= N-K
+// T[pos][short][long] = pos까지 고려하고 짧은 젓가락 쌍을 short개, 긴 젓가락 long개를
+//						 뽑았을 때, 벌점의 총 합의 최소값
+
+// T[5000][3000]
+
+// T[pos][k] = pos까지 고려했고 젓가락 k개를 뽑았을 때, 벌점의 총 합의 최소값
+// T[pos][k] = T[pos-2][k-2] + cost(pos-1,pos)
+// T[pos][k] = T[pos-1][k]
+// T[pos][k] = T[pos-1][k-1]
+
+// T[pos][k] = pos전 까지 고려했고 k개를 뽑았을 때, 벌점의 총 합의 최소값
 
 #include <cstdio>
-#include <cstdlib>
+#include <cstring>
 #include <algorithm>
 using namespace std;
 
-const long long INF = 2e18;
-const int MAXN = 5001;
-const int MAXK = 1001;
+const int INF = 2e9;
 
 int K, N;
-int chopsticks[MAXN];
-long long cache[MAXN][MAXK];
+int lengths[5001];
+int cache[5001][3001];
 
-int penalty(int a, int b) { return abs(chopsticks[a] - chopsticks[b]) * abs(chopsticks[a] - chopsticks[b]); }
-long long solve(int pos, int k) {
+int solve(int pos, int k, int depth) {
+	for (int i = 0; i < depth; i++) printf(" ");
+	printf("pos:%d k:%d\n", pos, k);
 	if (pos > N) {
-		if (k > 0) return INF;
+//		printf("pos:%d k:%d\n", pos, k);
+		if (k != 3 * K) return INF;
+//		printf("pos:%d k:%d\n", pos, k);
 		return 0;
 	}
-	long long &ret = cache[pos][k];
+	int &ret = cache[pos][k];
 	if (ret != -1) return ret;
-	ret = solve(pos+1, k);
-	if (k > 0 && pos+1 <= N) ret = min(ret, solve(pos+2, k-1) + penalty(pos, pos+1));
+	ret = solve(pos + 1, k, depth + 3);
+	if (k + 1 <= 3 * K)
+		ret = min(ret, solve(pos + 1, k + 1, depth + 3));
+	if (pos + 1 <= N && k + 2 <= 3 * K)
+		ret = min(ret, solve(pos + 2, k + 2, depth + 3) +
+			abs(lengths[pos] - lengths[pos + 1]) * abs(lengths[pos] - lengths[pos + 1]));
 	return ret;
 }
 int main() {
 	scanf("%d%d", &K, &N);
-	for (int i = 1; i <= N; i++) scanf("%d", &chopsticks[i]);
-	for (int i = 1; i <= N; i++)
-		for (int j = 1; j <= K; j++)
-			cache[i][j] = -1;
-	sort(chopsticks + 1, chopsticks + N + 1);
-	for (int i = 1; i <= N; i++) printf("%d ", chopsticks[i]); puts("");
-	printf("%lld", solve(1, K));
+	for (int i = 1; i <= N; i++) scanf("%d", &lengths[i]);
+	sort(lengths + 1, lengths + N + 1, [](int a, int b){ return a < b; });
+	memset(cache, -1, sizeof(cache));
+	printf("%d", solve(1, 0, 0));
 }
