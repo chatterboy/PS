@@ -1,43 +1,40 @@
 #include <cstdio>
 #include <vector>
+#include <algorithm>
 using namespace std;
+
+struct Friend {
+	int id;
+	int canPay;
+	int paid;
+	Friend(int id = 0, int canPay = 0, int paid = 0) : id(id), canPay(canPay), paid(paid) {}
+};
 
 int main() {
 	int tc; scanf("%d", &tc);
 	while (tc--) {
 		int p, n; scanf("%d%d", &p, &n);
-		vector<int> a(n);
-		int sum = 0;
+		vector<Friend> friends(n);
+		int total = 0;
 		for (int i = 0; i < n; i++) {
-			scanf("%d", &a[i]);
-			sum += a[i];
+			int w; scanf("%d", &w);
+			friends[i] = Friend(i, w);
+			total += w;
 		}
-		if (sum < p) puts("IMPOSSIBLE");
-		else {
-			vector<int> b(n, p / n);
-			int changes = p % n;
-			for (int i = 0; i < n; i++)
-				if (a[i] < b[i]) {
-					changes += b[i] - a[i];
-					b[i] = a[i];
-				}
-			int rich = 0;
-			for (int i = 0; i < n; i++)
-				if (a[i] - b[i]) rich++;
-			while (changes) {
-				if (changes >= rich) {
-					for (int i = 0; i < n; i++)
-						if (a[i] - b[i]) b[i]++;
-					changes -= rich;
-				} else {
-					int maxs = 0;
-					for (int i = 0; i < n; i++)
-						maxs = max(maxs, a[i] - b[i]);
-					for (int i = 0; i < n; i++)
-						if (changes && a[i] - b[i] == maxs) b[i]++, changes--;
-				}
-			}
-			for (int i = 0; i < n; i++) printf("%d ", b[i]); puts("");
+		if (total < p) { puts("IMPOSSIBLE"); continue; }
+		sort(friends.begin(), friends.end(), [](const Friend &a, const Friend &b){
+			if (a.canPay != b.canPay) return a.canPay > b.canPay;
+			return a.id < b.id;
+		});
+		int changes = p % n;
+		for (auto &fnd : friends) fnd.paid += p / n;
+		for (auto &fnd : friends) if (fnd.paid > fnd.canPay) {
+			changes += fnd.paid - fnd.canPay;
+			fnd.paid = fnd.canPay;
 		}
+		while (changes > 0)
+			for (int i = 0; i < n && changes > 0; i++) if (friends[i].canPay - friends[i].paid > 0) friends[i].paid++, changes--;
+		sort(friends.begin(), friends.end(), [](const Friend &a, const Friend &b){ return a.id < b.id; });
+		for (auto fnd : friends) printf("%d ", fnd.paid); puts("");
 	}
 }

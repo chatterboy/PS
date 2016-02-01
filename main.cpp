@@ -1,43 +1,38 @@
-// pos번 젓가락은
-// 1) 사용하지 않을 수 있다
-// 2) 짧은 젓가락 두 개 중 하나로 사용할 수 있다
-// 3) 긴 젓가락으로 사용할 수 있다
-
-// 2)에서 짧은 것 두 개로 사용할 때는 인접한 것 끼리 사용하는 것이 최적이다.
-
-// T[pos] = pos까지 고려했을 때 벌점의 총 합의 최솟값
-
-// T[pos][k] = pos까지 고려하고 k
-
-// T[pos][short][long] = pos까지 고려하고 짧은 젓가락 쌍을 short개, 긴 젓가락 long개를
-//						 뽑았을 때, 벌점의 총 합의 최소값
-
-// T[5000][3000]
-
-// T[pos][k] = pos까지 고려했고 젓가락 k개를 뽑았을 때, 벌점의 총 합의 최소값
-// T[pos][k] = T[pos-2][k-2] + cost(pos-1,pos)
-// T[pos][k] = T[pos-1][k]
-// T[pos][k] = T[pos-1][k-1]
-
 #include <cstdio>
+#include <utility>
+#include <vector>
 #include <algorithm>
 using namespace std;
 
-int K, N;
-int lengths[5001];
-int cache[5001][3001];
+typedef pair<int,int> Ball;
+
+int n;
+vector<Ball> balls;
+int sizeTable[2001];
+int psum[2001];
+vector<pair<int,int>> sizeTableInColor[200001];
 
 int main() {
-	scanf("%d%d", &K, &N);
-	for (int i = 1; i <= N; i++) scanf("%d", &lengths[i]);
-	sort(lengths + 1, lengths + N + 1, [](int a, int b){ return a < b; });
-	for (int pos = 3; pos <= N; pos++) {
-		for (int k = 3; k <= 3 * K; k++) {
-			cache[pos][k] = cache[pos - 1][k];
-			cache[pos][k] = min(cache[pos - 1][k],
-								cache[pos - 1][k - 1],
-								cache[pos - 2][k - 2] + );
-		}
+	scanf("%d", &n);
+	for (int i = 0; i < n; i++) {
+		int color, size; scanf("%d%d", &color, &size);
+		balls.push_back(make_pair(color, size));
+		sizeTable[size] += size;
+		sizeTableInColor[color].push_back(make_pair(size, 0));
 	}
-	printf("%d", cache[N][3 * K]);
+	psum[1] = sizeTable[1];
+	for (int size = 2; size <= 2000; size++) psum[size] = psum[size - 1] + sizeTable[size];
+	for (int color = 1; color <= 200000; color++) if (!sizeTableInColor[color].empty()) {
+		sort(sizeTableInColor[color].begin(), sizeTableInColor[color].end());
+		sizeTableInColor[color][0].second = sizeTableInColor[color][0].first;
+		for (int i = 1; i < sizeTableInColor[color].size(); i++)
+			sizeTableInColor[color][i] = sizeTableInColor[color][i - 1] + sizeTableInColor[color][i].first;
+	}
+	for (int i = 0; i < n; i++) {
+		int color = balls[i].first, size = balls[i].second;
+		int sol = (size == 1 ? 0 : psum[size - 1]);
+		auto p = lower_bound(sizeTableInColor[color].begin(), sizeTableInColor[color].end(), size) - sizeTableInColor[color].begin();
+		if (p > 0) sol -= sizeTableInColor[color][p - 1].second;
+		printf("%d\n", sol);
+	}
 }
