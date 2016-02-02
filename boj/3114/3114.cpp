@@ -3,31 +3,51 @@
 #include <algorithm>
 using namespace std;
 
-int R, C;
-char grid[1500][1501][3];
-int cache[1500][1500];
+const int INF = 1e9;
 
-int noTrees(int r, int c) {
+int R, C;
+char trees[1501][1502][4];
+int cache[1501][1501];
+
+int howManyTrees(char *pc) {
 	int ret = 0;
-	for (int i = 0; i < r; i++) if (grid[i][c][0] == 'B') ret++;
-	for (int i = R - 1; i > r; i--) if (grid[i][c][0] == 'A') ret++;
+	for (; *pc; pc++) ret = ret * 10 + (*pc - '0');
+	return ret;
+}
+
+int howManyTrees(char type, int r, int c) {
+	int ret = 0;
+	if (type == 'B') {
+		for (int i = r - 1; i >= 1; i--) if (trees[i][c][0] == type)
+			ret += howManyTrees(trees[i][c] + 1);
+	} else {
+		for (int i = r + 1; i <= R; i++) if (trees[i][c][0] == type)
+			ret += howManyTrees(trees[i][c] + 1);
+	}
 	return ret;
 }
 
 int maxTrees(int r, int c) {
-	if (r == R - 1 && c == C - 1) return 0;
+	if (r == R && c == C) {
+		return 0;
+	}
 	int &ret = cache[r][c];
-	if (ret != -1) return ret;
-	ret = max(ret, maxTrees(r + 1, c) + (grid[r][c][0] == 'B' ? grid[r][c] : 0) + (grid[r + 1][c][0] == 'A' ? -grid[r + 1][c] : 0));
-	ret = max(ret, maxTrees(r, c + 1) + noTrees(r, c));
-	ret = max(ret, maxTrees(r + 1, c + 1) + noTrees(r, c));
-	return ret;
+	if (ret != -2 * INF) return ret;
+	ret = -INF;
+	if (c + 1 <= C) ret = max(ret, maxTrees(r, c + 1) + howManyTrees('B', r, c + 1)
+													  + howManyTrees('A', r, c + 1));
+	if (r + 1 <= R && c + 1 <= C) ret = max(ret, maxTrees(r + 1, c + 1) + howManyTrees('B', r + 1, c + 1)
+																		+ howManyTrees('A', r + 1, c + 1));
+	if (r + 1 <= R) ret = max(ret, maxTrees(r + 1, c) + (trees[r + 1][c][0] == 'B' ? 0 : -howManyTrees(trees[r + 1][c] + 1)));
+	return ret;		
 }
 
 int main() {
 	scanf("%d%d", &R, &C);
-	for (int r = 0; r < R; r++)
-		for (int c = 0; c < C; c++)
-			scanf("%s", grid[r][c]);
-	printf("%d", maxTrees(0, 0));
+	for (int r = 1; r <= R; r++)
+		for (int c = 1; c <= C; c++) {
+			scanf("%s", trees[r][c]);
+			cache[r][c] = -(INF + INF);
+		}
+	printf("%d", maxTrees(1, 1) + howManyTrees('A', 1, 1));
 }
