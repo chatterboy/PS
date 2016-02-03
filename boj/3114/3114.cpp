@@ -8,6 +8,7 @@ const int INF = 1e9;
 int R, C;
 char trees[1501][1502][4];
 int cache[1501][1501];
+int bPsum[1501][1501], aPsum[1501][1501];
 
 int howManyTrees(char *pc) {
 	int ret = 0;
@@ -18,11 +19,9 @@ int howManyTrees(char *pc) {
 int howManyTrees(char type, int r, int c) {
 	int ret = 0;
 	if (type == 'B') {
-		for (int i = r - 1; i >= 1; i--) if (trees[i][c][0] == type)
-			ret += howManyTrees(trees[i][c] + 1);
+		if (r - 1 >= 1) ret += bPsum[r - 1][c];
 	} else {
-		for (int i = r + 1; i <= R; i++) if (trees[i][c][0] == type)
-			ret += howManyTrees(trees[i][c] + 1);
+		ret += aPsum[R][c] - aPsum[r][c];
 	}
 	return ret;
 }
@@ -49,5 +48,12 @@ int main() {
 			scanf("%s", trees[r][c]);
 			cache[r][c] = -(INF + INF);
 		}
+	for (int c = 1; c <= C; c++) {
+		if (trees[1][c][0] == 'B') bPsum[1][c] = howManyTrees(trees[1][c] + 1); else aPsum[1][c] = howManyTrees(trees[1][c] + 1);
+		for (int r = 2; r <= R; r++) {
+			bPsum[r][c] = bPsum[r - 1][c], aPsum[r][c] = aPsum[r - 1][c];
+			if (trees[r][c][0] == 'B') bPsum[r][c] += howManyTrees(trees[r][c] + 1); else aPsum[r][c] += howManyTrees(trees[r][c] + 1);
+		}
+	}
 	printf("%d", maxTrees(1, 1) + howManyTrees('A', 1, 1));
 }
