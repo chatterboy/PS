@@ -16,19 +16,19 @@ int minRotations(int pos, int rotations) {
 	int s = ((src[pos] - '0') + rotations) % 10;
 	int e = des[pos] - '0';
 	return ret = min(minRotations(pos + 1, rotations) + ((s - e + 10) % 10),
-			   	 minRotations(pos + 1, (rotations + ((e - s + 10) % 10)) % 10) + ((e - s + 10) % 10));
+			   	 	 minRotations(pos + 1, (rotations + ((e - s + 10) % 10)) % 10) + ((e - s + 10) % 10));
 }
 
 void construct(int pos, int rotations) {
 	if (pos > N) return;
 	int s = ((src[pos] - '0') + rotations) % 10;
 	int e = des[pos] - '0';
-	if (minRotations(pos + 1, rotations) + ((s - e + 10) % 10) <= minRotations(pos + 1, (rotations + ((e - s + 10) % 10)) % 10) + ((e - s + 10) % 10)) {
+	if (minRotations(pos + 1, rotations) + ((s - e + 10) % 10) < minRotations(pos + 1, (rotations + ((e - s + 10) % 10)) % 10) + ((e - s + 10) % 10)) {
 		printf("%d %d\n", pos, -1 * ((s - e + 10) % 10));
 		construct(pos + 1, rotations);
 	} else {
 		printf("%d %d\n", pos, ((e - s + 10) % 10));
-		construct(pos + 1, rotations + ((e - s + 10) % 10));
+		construct(pos + 1, (rotations + ((e - s + 10) % 10)) % 10);
 	}
 }
 
