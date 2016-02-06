@@ -8,5 +8,5 @@ int t[MAXN], d[MAXN];
 int main() {
 	scanf("%d%d", &N, &L);
 	for (int i = 1; i <= N; i++) scanf("%d%d", &t[i], &d[i]);
-	printf("%d", longestZigzag());
+	printf("%d", longestZigzags());
 }

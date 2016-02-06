@@ -1,34 +1,40 @@
 #include <cstdio>
-#include <vector>
+#include <queue>
 #include <algorithm>
 using namespace std;
 
-struct Researcher {
-	int arrives;
-	int stays;
-	Researcher(int arrives = 0, int stays = 0) : arrives(arrives), stays(stays) {}
-};
+#define maxn 300003
+
+struct Work {
+	int a, s;
+} works[maxn];
+
+int n, m;
+priority_queue<int> pq;
 
 int main() {
-	int n, m; scanf("%d%d", &n, &m);
-	vector<Researcher> researchers(n);
-	for (int i = 0; i < n; i++) scanf("%d%d", &researchers[i].arrives, &researchers[i].stays);
-	sort(researchers.begin(), researchers.end(), [](const Researcher &a, const Researcher &b){
-		if (a.arrives != b.arrives) return a.arrives < b.arrives;
-		return a.stays > b.stays;
+	scanf("%d%d", &n, &m);
+	for (int i = 1; i <= n; i++) scanf("%d%d", &works[i].a, &works[i].s);
+	sort(works + 1, works + n + 1, [](const Work &w1, const Work &w2){
+		return w1.a < w2.a;
 	});
-	int sol = 1;
-	for (int i = 0; i < n; ) {
-		int j;
-		int maxv = -1;
-		int maxj = -1;
-		for (j = i + 1; j < n && researchers[j].arrives <= researchers[i].arrives + researchers[i].stays + m; j++)
-			if (researchers[j].stays > maxv) {
-				maxv = researchers[j].stays;
-				maxj = j;
+	int sol = 0;
+	for (int i = 1; i <= n; i++) {
+		bool timeOver = true;
+		while (!pq.empty()) {
+			int t = pq.top();
+			pq.pop();
+			if (works[i].a >= t && works[i].a < t + m) {
+				timeOver = false;
+				pq.push(min(t, works[i].a + works[i].s));
+				break;
 			}
-		if (maxj == -1) sol++;
-		i = j;
+		}
+		if (timeOver) {
+			sol++;
+			pq.push(works[i].a + works[i].s);
+		}
 	}
 	printf("%d", sol);
+	return 0;
 }
