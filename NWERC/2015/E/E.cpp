@@ -9,7 +9,7 @@ using namespace std;
 
 int n, m;
 int counter = 0;
-vector<long long> a, b;
+vector<long long> a, b; 
 vector<pair<int, long long>> c;
 map<long long, int> maps;
 vector<int> adj[maxn];
