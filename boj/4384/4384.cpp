@@ -1,46 +1,29 @@
-// 현재 dp에서 A's weight를 없애고
-// T[pos][A팀에 있는 사람 수]일 때 0에 가장 가까운 수
-// 로 정의할수 있으면 가장 좋다.
+// WA
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
-#include <algorithm>
-using namespace std;
+#include <cstring>
 
-int N, total, w[101];
-int cache[101][45001];
+const int inf = 1e9;
 
-int nearlyEqual(int pos, int AsWeight) {
-	if (pos > N) {
-		return abs(2 * AsWeight - total);
+int n, w[101];
+int cache[101][101];
+
+int nearlyEqual(int pos, int inA) {
+	if (inA < 0) return inf;
+	if (pos == 0) {
+		if (inA != 0) return inf;
+		return 0;
 	}
-	int &ret = cache[pos][AsWeight];
-	if (ret != -1) return ret;
-	return ret = min(nearlyEqual(pos + 1, AsWeight), nearlyEqual(pos + 1, AsWeight + w[pos]));
+	int a, b;
+	if (inA - 1 >= 0)
+		a = nearlyEqual(pos - 1, inA - 1) + w[pos];
+	b = nearlyEqual(pos - 1, inA) - w[pos];
+	return abs(a) > abs(b) ? b : a;
 }
-
-void construct(int pos, int AsWeight) {
-	if (pos > N) {
-		int first = AsWeight, second = total - AsWeight;
-		if (first > second) swap(first, second);
-		printf("%d %d", first, second);
-		return;
-	}
-	if (nearlyEqual(pos + 1, AsWeight) < nearlyEqual(pos + 1, AsWeight + w[pos])) {
-		construct(pos + 1, AsWeight);
-	} else {
-		construct(pos + 1, AsWeight + w[pos]);
-	}
-}
-
 int main() {
-	scanf("%d", &N);
-	for (int i = 1; i <= N; i++) {
-		scanf("%d", &w[i]);
-		total += w[i];
-	}
-	memset(cache, -1, sizeof(cache));
-	nearlyEqual(1, 0);
-	construct(1, 0);
+	scanf("%d", &n);
+	for (int i = 1; i <= n; i++) scanf("%d", &w[i]);
+	for (int i = 1; i <= n; i++) for (int j = 1; j <= n; j++) cache[i][j] = -inf;
+	printf("%d", nearlyEqual(n, n / 2));
 	return 0;
 }
