@@ -1,48 +1,32 @@
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include <bits/stdc++.h>
+using namespace std;
 
-int main(int argc, char *argv[]) {
-	int socket_desc, new_socket, c;
-	struct sockaddr_in server, client;
-	char *message;
-
-	// create socket
-	socket_desc = socket(AF_INET, SOCK_STREAM, 0);
-	if (socket_desc < 0) {
-		puts("Could not create socket");
-		return 1;
+int main() {
+	int N;
+	scanf("%d", &N);
+	vector<int> numOfBinary(1024);
+	for (int i = 0; i < N; i++) {
+		long long t;
+		scanf("%lld", &t);
+		bool digits[10] = {false};
+		while (t > 0) {
+			digits[t % 10] = true;
+			t /= 10;
+		}
+		t = 0;
+		for (int b = 0; b < 10; b++)
+			if (digits[b])
+				t += (1 << b);
+		numOfBinary[t]++;
 	}
-
-	// prepare the sockaddr_in structure
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons(8888);
-
-	// bind
-	if (bind(socket_desc, (struct sockaddr*)&server, sizeof(server)) < 0) {
-		puts("bind failed");
-		return 1;
+	long long sol = 0;
+	for (int i = 1; i < 1024; i++) {
+		if (numOfBinary[i] > 1)
+			sol = sol + (long long)numOfBinary[i] * (numOfBinary[i] - 1) / 2;
+		for (int j = i + 1; j < 1024; j++)
+			if (i != j && (i & j))
+				sol += (long long)numOfBinary[i] * numOfBinary[j];
 	}
-
-	// listen
-	listen(socket_desc, 5);
-
-	// accept and incoming connection
-	puts("waiting for incoming connections...");
-	c = sizeof(struct sockaddr_in);
-	while ((new_socket = accept(socket_desc, (struct sockaddr*)&client, (socklen_t*)&c))) {
-		puts("connection accepted");
-
-		// reply to the client
-		message = "hello client, i have received your connection. but i have to go now. bye";
-		write(new_socket, message, strlen(message));
-	}
-
-	if (new_socket < 0) {
-		perror("accept failed");
-		return 1;
-	}
+	printf("%lld", sol);
+	return 0;
 }
