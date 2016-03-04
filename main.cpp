@@ -1,32 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+#define a first
+#define b second
+
+const int inf = 1e8;
+
+int cache[2][50001][2];
+
 int main() {
-	int N;
-	scanf("%d", &N);
-	vector<int> numOfBinary(1024);
-	for (int i = 0; i < N; i++) {
-		long long t;
-		scanf("%lld", &t);
-		bool digits[10] = {false};
-		while (t > 0) {
-			digits[t % 10] = true;
-			t /= 10;
+	int T;
+	scanf("%d", &T);
+	while (T--) {
+		int N;
+		scanf("%d", &N);
+		vector<pair<int,int>> bakedTime;
+		for (int i = 0; i < N; i++) {
+			int a, b;
+			scanf("%d%d", &a, &b);
+			bakedTime.push_back({a, b});
 		}
-		t = 0;
-		for (int b = 0; b < 10; b++)
-			if (digits[b])
-				t += (1 << b);
-		numOfBinary[t]++;
+		for (int i = 0; i < 2; i++)
+			for (int j = 0; j < 50001; j++)
+				for (int k = 0; k < 2; k++)
+					cache[i][j][k] = inf;
+		cache[0][bakedTime[0].a][0] = bakedTime[0].a;
+		cache[0][bakedTime[0].b][1] = bakedTime[0].b;
+		for (int pos = 1; pos < N; pos++) {
+			for (int diff = 0; diff < 50001; diff++) {
+				if (bakedTime[pos].b + diff < 50001)
+					cache[pos % 2][diff][0] = min(cache[pos % 2][diff][0], cache[(pos - 1) % 2][bakedTime[pos].b + diff][0]);
+				if (diff >= bakedTime[pos].a)
+					cache[pos % 2][diff][0] = min(cache[pos % 2][diff][0], cache[(pos - 1) % 2][diff - bakedTime[pos].a][0] + bakedTime[pos].a);
+				if (bakedTime[pos].a >= diff)
+					cache[pos % 2][diff][0] = min(cache[pos % 2][diff][0], cache[(pos - 1) % 2][bakedTime[pos].a - diff][1] + diff);
+
+				if (bakedTime[pos].a + diff < 50001)
+					cache[pos % 2][diff][1] = min(cache[pos % 2][diff][1], cache[(pos - 1) % 2][bakedTime[pos].a + diff][1]);
+				if (diff >= bakedTime[pos].b)
+					cache[pos % 2][diff][1] = min(cache[pos % 2][diff][1], cache[(pos - 1) % 2][diff - bakedTime[pos].b][1] + bakedTime[pos].b);
+				if (bakedTime[pos].b >= diff)
+					cache[pos % 2][diff][1] = min(cache[pos % 2][diff][1], cache[(pos - 1) % 2][bakedTime[pos].b - diff][0] + diff);
+			}
+		}
+		int sol = inf;
+		for (int diff = 0; diff < 50001; diff++)
+			sol = min(sol, min(cache[(N - 1) % 2][diff][0], cache[(N - 1) % 2][diff][1]));
+		printf("%d\n", sol);
 	}
-	long long sol = 0;
-	for (int i = 1; i < 1024; i++) {
-		if (numOfBinary[i] > 1)
-			sol = sol + (long long)numOfBinary[i] * (numOfBinary[i] - 1) / 2;
-		for (int j = i + 1; j < 1024; j++)
-			if (i != j && (i & j))
-				sol += (long long)numOfBinary[i] * numOfBinary[j];
-	}
-	printf("%lld", sol);
 	return 0;
 }
