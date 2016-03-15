@@ -1,25 +1,35 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int cache[1001][1001];
+const int inf = 1e8;
 
-int solve(int a, int b) {
-	if (a <= 0 || b <= 0) return 0;
-	int &ret = cache[a][b];
-	if (ret != -1)
-		return ret;
-	ret = 0;
-	if (a >= 2)
-		ret = max(ret, 1 + solve(a - 2, b + 1));
-	if (b >= 2)
-		ret = max(ret, 1 + solve(a + 1, b - 2));
+int n, m;
+int a, b, c;
+char s1[3001], s2[3001];
+vector<vector<int>> cache;
+
+int solve(int i, int j) {
+	if (i == 0 && j == 0)
+		return 0;
+	int &ret = cache[i][j];
+	if (ret != -inf) return ret;
+	ret = -inf + 99;
+	if (i > 0 && j > 0 && s1[i] == s2[j])
+		ret = max(ret, solve(i - 1, j - 1) + a);
+	else if (i > 0 && j > 0)
+		ret = max(ret, solve(i - 1, j - 1) + c);
+	if (i > 0)
+		ret = max(ret, solve(i - 1, j) + b);
+	if (j > 0)
+		ret = max(ret, solve(i, j - 1) + b);
 	return ret;
 }
 
 int main() {
-	int a, b;
-	cin >> a >> b;
-	memset(cache, -1, sizeof(cache));
-	cout << max(solve(a, b), solve(a, b));
+	scanf("%d%d%d", &a, &b, &c);
+	scanf("%s%s", s1 + 1, s2 + 1);
+	n = strlen(s1 + 1), m = strlen(s2 + 1);
+	cache = vector<vector<int>>(n + 1, vector<int>(m + 1, -inf));
+	printf("%d", solve(n, m));
 	return 0;
 }

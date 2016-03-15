@@ -1,52 +1,75 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define a first
-#define b second
+struct LongLong {
+	vector<int> v;
 
-const int inf = 1e8;
+	LongLong(int d) {
+		v.push_back(d);
+	}
 
-int cache[2][50001][2];
+	LongLong(vector<int> &v) : v(v) {}
+
+	void setToSameDigit(vector<int> &v1, vector<int> &v2) {
+		if (v1.size() < v2.size())
+			swap(v1, v2);
+		int n = v1.size() - v2.size();
+		for (int i = 0; i < n; i++)
+			v2.push_back(0);
+	}
+
+	void normalize() {
+		v.push_back(0);
+		int n = v.size();
+		for (int i = 0; i < n - 1; i++) {
+			v[i + 1] += v[i] / 10;
+			v[i] %= 10;
+		}
+		while (v.back() == 0)
+			v.pop_back();
+	}
+
+	LongLong operator + (const LongLong &b) {
+		vector<int> v1(v);
+		vector<int> v2(b.v);
+
+		setToSameDigit(v1, v2);
+
+		int n = v1.size();
+		vector<int> v3(n, 0);
+		for (int i = 0; i < n; i++)
+			v3[i] = v1[i] + v2[i];
+
+		LongLong c(v3);
+		c.normalize();
+
+		return c;
+	}
+
+	void print() {
+		int n = v.size();
+		for (int i = n - 1; i >= 0; i--)
+			printf("%d", v[i]);
+	}
+};
 
 int main() {
-	int T;
-	scanf("%d", &T);
-	while (T--) {
-		int N;
-		scanf("%d", &N);
-		vector<pair<int,int>> bakedTime;
-		for (int i = 0; i < N; i++) {
-			int a, b;
-			scanf("%d%d", &a, &b);
-			bakedTime.push_back({a, b});
+	int n;
+	cin >> n;
+	vector<vector<int>> score(n, vector<int>(n));
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			cin >> score[i][j];
+	vector<vector<LongLong>> cache(n, vector<LongLong>(n, 0));
+	cache[0][0] = 1;
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++) {
+			if (score[i][j] == 0) continue;
+			if (i + score[i][j] < n)
+				cache[i + score[i][j]][j] = cache[i + score[i][j]][j] + cache[i][j];
+			if (j + score[i][j] < n)
+				cache[i][j + score[i][j]] = cache[i][j + score[i][j]] + cache[i][j];
 		}
-		for (int i = 0; i < 2; i++)
-			for (int j = 0; j < 50001; j++)
-				for (int k = 0; k < 2; k++)
-					cache[i][j][k] = inf;
-		cache[0][bakedTime[0].a][0] = bakedTime[0].a;
-		cache[0][bakedTime[0].b][1] = bakedTime[0].b;
-		for (int pos = 1; pos < N; pos++) {
-			for (int diff = 0; diff < 50001; diff++) {
-				if (bakedTime[pos].b + diff < 50001)
-					cache[pos % 2][diff][0] = min(cache[pos % 2][diff][0], cache[(pos - 1) % 2][bakedTime[pos].b + diff][0]);
-				if (diff >= bakedTime[pos].a)
-					cache[pos % 2][diff][0] = min(cache[pos % 2][diff][0], cache[(pos - 1) % 2][diff - bakedTime[pos].a][0] + bakedTime[pos].a);
-				if (bakedTime[pos].a >= diff)
-					cache[pos % 2][diff][0] = min(cache[pos % 2][diff][0], cache[(pos - 1) % 2][bakedTime[pos].a - diff][1] + diff);
-
-				if (bakedTime[pos].a + diff < 50001)
-					cache[pos % 2][diff][1] = min(cache[pos % 2][diff][1], cache[(pos - 1) % 2][bakedTime[pos].a + diff][1]);
-				if (diff >= bakedTime[pos].b)
-					cache[pos % 2][diff][1] = min(cache[pos % 2][diff][1], cache[(pos - 1) % 2][diff - bakedTime[pos].b][1] + bakedTime[pos].b);
-				if (bakedTime[pos].b >= diff)
-					cache[pos % 2][diff][1] = min(cache[pos % 2][diff][1], cache[(pos - 1) % 2][bakedTime[pos].b - diff][0] + diff);
-			}
-		}
-		int sol = inf;
-		for (int diff = 0; diff < 50001; diff++)
-			sol = min(sol, min(cache[(N - 1) % 2][diff][0], cache[(N - 1) % 2][diff][1]));
-		printf("%d\n", sol);
-	}
+	cache[n - 1][n - 1].print();
 	return 0;
 }
